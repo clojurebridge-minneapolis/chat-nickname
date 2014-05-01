@@ -4,22 +4,23 @@ This is a ClojureBridge Minneapolis sample application
 
 ## running in development
 
-export NICKNAME=mynickname
-lein ring server
-
-NOTE: https://github.com/weavejester/lein-ring
-If the LEIN_NO_DEV environment variable is not set, the server will monitor your source directory for file modifications, and any altered files will automatically be reloaded.
-
+    export NICKNAME=mynickname
+    lein ring server
 
 ## running in production
 
-lein with-profile production trampoline ring server-headless
+    lein with-profile production trampoline ring server-headless
 
 ## running in production on heroku
 
+    heroku apps:create chat-mynickname
+    heroku config:add NICKNAME=mynickname
+    git push heroku master
+    heroku open
+
 ## test
 
-lein test
+    lein test
 
 ## License
 

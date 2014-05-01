@@ -1,14 +1,14 @@
-(ns chat-nickname.test.handler
+(ns chat-nickname.test.web
   (:use clojure.test
         ring.mock.request
-        chat-nickname.handler))
+        chat-nickname.web))
 
 (deftest test-app
   (testing "main route"
     (let [response (app (request :get "/"))]
       (is (= (:status response) 200))
-      (is (> (.indexOf (:body response) "<title>chat-nickname</title>") 0)
-          "Title should be 'chat-nickname'")))
+      (is (> (.indexOf (:body response) "<title>chat") 0)
+          "Title should start with chat-")))
 
   (testing "hello"
     (let [response (app (request :get "/hello"))]

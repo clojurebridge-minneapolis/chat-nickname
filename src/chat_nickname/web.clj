@@ -255,8 +255,6 @@
               [:p "Invalid userid, please try again..."]))))
 
 (defn authenticated? [name pass]
-  (println (str "authenticated? =" name ":" pass "= vs. =" (:chat-nickname env) ":" (:repl-password env) "="))
-  (println "result is" (= [name pass] [(:chat-nickname env) (:repl-password env)]))
   (= [name pass] [(:chat-nickname env) (:repl-password env)]))
 
 (defroutes app-routes
@@ -273,25 +271,28 @@
   (GET "/hello" [] "Hello World!")
   (GET "/stacktrace" [] ("string-is-not-a-function"))
   (route/resources "/")
-  ;; (ANY "/repl" request ((wrap-basic-authentication drawbridge/ring-handler authenticated?) request))
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
 (def app
-  (-> #'app-routes wrap-cookies wrap-keyword-params wrap-nested-params wrap-params wrap-session))
+  (-> #'app-routes wrap-keyword-params wrap-nested-params wrap-params wrap-cookies wrap-session))
+
+(def drawbridge-handler
+  (-> (drawbridge/ring-handler)
+      (wrap-keyword-params)
+      (wrap-nested-params)
+      (wrap-params)
+      (wrap-session)))
 
 (defn wrap-drawbridge [handler]
   (fn [req]
     (let [handler (if (= "/repl" (:uri req))
-                    (-> handler
-                        (wrap-basic-authentication authenticated?)
-                        (drawbridge/ring-handler))
+                    (wrap-basic-authentication
+                     drawbridge-handler authenticated?)
                     handler)]
       (handler req))))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (:port env) 3000))]
-    ;; (println "env:" env)
-    ;; (println "starting on port:" port)
     (jetty/run-jetty (wrap-drawbridge app)
                      {:port port :join? false})))

@@ -32,10 +32,26 @@ to use when connecting like this (locally):
 Or set a Heroku config variable like this:
 
     heroku config:add REPL_PASSWORD=monkey
-    lein repl :connect http://mynickname:monkey@chat-mynickname.herokuapp.com:80/repl
 
-NOTE: at the moment there is a bug after connecting to drawbridge :(.
-Normally you should get a REPL prompt.
+```$ lein repl :connect http://mynickname:monkey@chat-mynickname.herokuapp.com:80/repl
+Connecting to nREPL at http://mynickname:monkey@chat-mynickname.herokuapp.com:80/repl
+REPL-y 0.3.0
+Clojure 1.6.0
+    Docs: (doc function-name-here)
+          (find-doc "part-of-name-here")
+  Source: (source function-name-here)
+ Javadoc: (javadoc java-object-or-class-here)
+    Exit: Control+D or (exit) or (quit)
+ Results: Stored in vars *1, *2, *3, an exception in *e
+
+user=> (ns chat-nickname.web)
+nil
+chat-nickname.web=> @data
+{:servers {"http://ficelle.info9.net:1234" {:url "http://ficelle.info9.net:1234", :updated 1399074722830}}, :users {}}
+chat-nickname.web=> (exit)
+Bye for now!
+$
+```
 
 ## test
 

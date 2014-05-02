@@ -273,24 +273,25 @@
   (GET "/hello" [] "Hello World!")
   (GET "/stacktrace" [] ("string-is-not-a-function"))
   (route/resources "/")
-  (ANY "/repl" request ((wrap-basic-authentication drawbridge/ring-handler authenticated?) request))
+  ;; (ANY "/repl" request ((wrap-basic-authentication drawbridge/ring-handler authenticated?) request))
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
 (def app
   (-> #'app-routes wrap-cookies wrap-keyword-params wrap-nested-params wrap-params wrap-session))
 
-;; (defn wrap-drawbridge [handler]
-;;   (fn [req]
-;;     (let [handler (if (= "/repl" (:uri req))
-;;                     (wrap-basic-authentication
-;;                      drawbridge/ring-handler authenticated?)
-;;                     handler)]
-;;       (handler req))))
+(defn wrap-drawbridge [handler]
+  (fn [req]
+    (let [handler (if (= "/repl" (:uri req))
+                    (-> handler
+                        (wrap-basic-authentication authenticated?)
+                        (drawbridge/ring-handler))
+                    handler)]
+      (handler req))))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (:port env) 3000))]
-    (println "env:" env)
-    (println "starting on port:" port)
-    (jetty/run-jetty app ;; (wrap-drawbridge app)
+    ;; (println "env:" env)
+    ;; (println "starting on port:" port)
+    (jetty/run-jetty (wrap-drawbridge app)
                      {:port port :join? false})))

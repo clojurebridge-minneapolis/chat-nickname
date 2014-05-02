@@ -14,7 +14,7 @@ This is a ClojureBridge Minneapolis sample application
 ## running in production on heroku
 
     heroku apps:create chat-mynickname
-    heroku config:add NICKNAME=mynickname
+    heroku config:add CHAT_NICKNAME=mynickname CHAT_URL=http://chat-mynickname.herokuapp.com
     git push heroku master
     heroku open
 

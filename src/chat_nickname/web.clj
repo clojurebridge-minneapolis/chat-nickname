@@ -59,9 +59,30 @@
 
 (defn update-server [url timestamp]
   (let [server (get-server url)]
-    (put-server url (assoc server :updated timestamp))))
+    (put-server url (assoc server :url url :updated timestamp))))
 
-(defn add-server [server]
+(defn update-other-server [o-url o-updated]
+  (let [url (str o-url "/users")]
+      (try
+        (let [response (client/get url)
+              status (:status response)
+              body (if (== status 200) (:body response))
+              other-users (if body (json/parse-string body true))]
+          ;; (println "(update-other-server" o-url ") => " other-users)
+          (doseq [kw-o-userid (keys other-users)]
+            ;; NOTE json/parse-string will keywordize the userid
+            (let [o-userid (Integer. (name kw-o-userid))
+                  o-user (get other-users kw-o-userid)
+                  o-server (:server o-user)]
+              (if-not (get-server o-server)
+                ;; if we have never seen this server, add it to the list to update next time
+                (put-server o-server {:url o-server :updated 0}))
+              (put-user o-userid o-user))))
+        (catch Exception e
+          (.getMessage e))))
+  (update-server o-url o-updated))
+
+(defn add-other-server [server]
   (let [url (str server "/servers")]
     (if (= server (:url this-server))
       "cannot add self!"
@@ -70,22 +91,30 @@
               status (:status response)
               body (if (== status 200) (:body response))
               other-servers (if body (json/parse-string body true))]
-          (println "(add-server" server ") => " other-servers)
+          ;; (println "(add-other-server" server ") => " other-servers)
           (doseq [kw-o-url (keys other-servers)]
             ;; NOTE json/parse-string will keywordize the url
             (let [o-url (subs (str kw-o-url) 1)]
-              (println "considering" o-url)
+              ;; (println "considering" o-url)
               (if (= o-url (:url this-server))
-                (println "ignoring adding self...")
-                (let [o-server (get other-servers o-url)
+                nil ;; (println "ignoring adding self...")
+                (let [o-server (get other-servers kw-o-url)
                       o-updated (:updated o-server)
                       local-server (get-server o-url)
                       local-updated (:updated local-server)]
-                  (if (= local-updated o-updated)
-                    (println "we are already up to date with" o-url)
-                    (println "need to update" o-url "%" o-updated " vs. " local-server "%" local-updated)))))))
+                  (if (and local-server (= local-updated o-updated))
+                    nil ;; (println "we are already up to date with" o-url)
+                    (do
+                      (println "need to update" o-url "%" o-updated " vs. " local-updated)
+                      (update-other-server o-url o-updated)
+                      )))))))
         (catch Exception e
           (.getMessage e))))))
+
+(defn update-other-servers []
+  ;; (println "getting updates from all OTHER servers...")
+  (doseq [o-url (keys (get-servers))]
+    (add-other-server o-url)))
 
 (defn create-user [userid]
   (let [user {:name (str userid)
@@ -101,7 +130,7 @@
      [:li list-item])])
 
 (defn layout [title redirect & content]
-  (let [delay (if (:production env) 0 5)]
+  (let [delay (if (:production env) 0 3)]
     (page/html5
      [:head
       [:title title]
@@ -186,13 +215,14 @@
                                    :name username
                                    :said (str (:name user) " is now known as " username)))
                 (update-server (:url this-server) (timestamp-now))
+                (update-other-servers)
                 [:p (str "you changed your username (for userid = " userid ") to ") [:b username]])
               [:p "Invalid userid, please try again..."]))))
 
 (defn federate-server [cookies params]
   (let [title "federate server"
         server (:server params)
-        errmsg (add-server server)]
+        errmsg (add-other-server server)]
     (layout title "/"
             [:h1 title]
             (if errmsg
@@ -209,10 +239,13 @@
             [:h1 title]
             (if user
               (if (str/blank? message)
-                [:p "will just update the page..."]
+                (do
+                  (update-other-servers)
+                  [:p "will just update the page..."])
                 (do
                   (put-user userid (assoc user :said message))
                   (update-server (:url this-server) (timestamp-now))
+                  (update-other-servers)
                   [:p "you sent message: " [:b message]]))
               [:p "Invalid userid, please try again..."]))))
 

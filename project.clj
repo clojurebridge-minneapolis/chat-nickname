@@ -8,7 +8,10 @@
                  [compojure "1.1.6"]
                  [hiccup "1.0.5"]
                  [environ "0.5.0"]
-                 [javax.servlet/servlet-api "2.5"]]
+                 [javax.servlet/servlet-api "2.5"]
+                 [clj-http "0.9.1"]
+                 [cheshire "5.3.1"]
+                 [clj-time "0.4.4"]]
   :plugins [[lein-ring "0.8.10"]
             [lein-environ "0.5.0"]]
   :ring {:handler chat-nickname.web/app}

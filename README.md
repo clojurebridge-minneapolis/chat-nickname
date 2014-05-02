@@ -5,6 +5,8 @@ This is a ClojureBridge Minneapolis sample application
 ## running in development
 
     export NICKNAME=mynickname
+    export CHAT_NICKNAME=mynickname
+    export CHAT_URL=http://localhost:3000
     lein ring server
 
 ## running in production

@@ -6,6 +6,9 @@
   :min-lein-version "2.3.4"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [compojure "1.1.6"]
+                 [ring/ring-jetty-adapter "1.2.2"]
+                 [ring-basic-authentication "1.0.5"]
+                 [com.cemerick/drawbridge "0.0.6"]
                  [hiccup "1.0.5"]
                  [environ "0.5.0"]
                  [javax.servlet/servlet-api "2.5"]
@@ -15,6 +18,7 @@
   :plugins [[lein-ring "0.8.10"]
             [lein-environ "0.5.0"]]
   :ring {:handler chat-nickname.web/app}
+  :main chat-nickname.web
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]]}
    :production {:env {:production true}}})

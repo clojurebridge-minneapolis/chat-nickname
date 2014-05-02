@@ -1,22 +1,27 @@
 (ns chat-nickname.web
-  (:use [compojure.core]
-        [ring.middleware.cookies        :only [wrap-cookies]]
-        [ring.middleware.params         :only [wrap-params]]
-        [ring.middleware.keyword-params :only [wrap-keyword-params]])
   (:require [clojure.string :as str]
             [clojure.java.io :as io]
+            [environ.core :refer [env]]
+            [ring.middleware.cookies :refer [wrap-cookies]]
+            [ring.middleware.params  :refer [wrap-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [ring.middleware.nested-params :refer [wrap-nested-params]]
+            [ring.middleware.session :refer [wrap-session]]
+            [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]
+            [compojure.core :refer [defroutes GET POST ANY]]
             [compojure.route :as route]
+            [ring.adapter.jetty :as jetty]
+            [cemerick.drawbridge :as drawbridge]
             [hiccup.core :as hiccup]
             [hiccup.page :as page]
             [hiccup.form :as form]
-            [environ.core :refer [env]]
+            [clj-time.core :as dt] ;; think of dt as Date and Time
             [clj-http.client :as client]
-            [cheshire.core :as json]
-            [clj-time.core :as dt]))
+            [cheshire.core :as json]))
 
 (defn new-userid []
   (let [userid (rand-int 1000000)] ;; you are one in a million!
-    ;; check to make sure userid is not already in use!
+    ;; future option: check to make sure userid is not already in use
     userid))
 
 (defn timestamp-now []
@@ -249,6 +254,11 @@
                   [:p "you sent message: " [:b message]]))
               [:p "Invalid userid, please try again..."]))))
 
+(defn authenticated? [name pass]
+  (println (str "authenticated? =" name ":" pass "= vs. =" (:chat-nickname env) ":" (:repl-password env) "="))
+  (println "result is" (= [name pass] [(:chat-nickname env) (:repl-password env)]))
+  (= [name pass] [(:chat-nickname env) (:repl-password env)]))
+
 (defroutes app-routes
   (GET "/" {cookies :cookies} (main-page cookies))
   (POST "/change-username" {cookies :cookies params :params} (change-username cookies params))
@@ -263,8 +273,24 @@
   (GET "/hello" [] "Hello World!")
   (GET "/stacktrace" [] ("string-is-not-a-function"))
   (route/resources "/")
+  (ANY "/repl" request ((wrap-basic-authentication drawbridge/ring-handler authenticated?) request))
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
 (def app
-  (-> #'app-routes wrap-cookies wrap-keyword-params wrap-params))
+  (-> #'app-routes wrap-cookies wrap-keyword-params wrap-nested-params wrap-params wrap-session))
+
+;; (defn wrap-drawbridge [handler]
+;;   (fn [req]
+;;     (let [handler (if (= "/repl" (:uri req))
+;;                     (wrap-basic-authentication
+;;                      drawbridge/ring-handler authenticated?)
+;;                     handler)]
+;;       (handler req))))
+
+(defn -main [& [port]]
+  (let [port (Integer. (or port (:port env) 3000))]
+    (println "env:" env)
+    (println "starting on port:" port)
+    (jetty/run-jetty app ;; (wrap-drawbridge app)
+                     {:port port :join? false})))

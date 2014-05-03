@@ -64,7 +64,5 @@
         chat-nickname-version (or (:chat-nickname-version env) "unknown")
         chat-url (or (:chat-url env) (str "http://localhost:" port))]
     (initialize-this-server chat-url chat-nickname-version)
-    (println "@this-server-url" @this-server-url)
-    (println "@data" @data)
     (jetty/run-jetty (wrap-drawbridge app)
                      {:port port :join? false})))

@@ -6,11 +6,11 @@ This is a ClojureBridge Minneapolis sample application
 
     export CHAT_NICKNAME=mynickname
     export CHAT_URL=http://localhost:3000
-    lein ring server
+    lein run
 
 ## running in production
 
-    lein with-profile production trampoline ring server-headless
+    lein with-profile production trampoline run
 
 ## running in production on heroku
 

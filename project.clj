@@ -1,9 +1,10 @@
-(defproject chat-nickname "0.2.0-SNAPSHOT"
+(defproject chat-nickname "0.2.4"
   :description "Sample Clojure web application"
   :url "https://github.com/clojurebridge-minneapolis/chat-nickname"
   :license {:name "MIT"
             :url "http://opensource.org/licenses/MIT"}
   :min-lein-version "2.3.4"
+  :plugins [[lein-environ "0.5.0"]] ;; allows :env below
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [compojure "1.1.6"]
                  [ring/ring-jetty-adapter "1.2.2"]
@@ -15,10 +16,9 @@
                  [clj-http "0.9.1"]
                  [cheshire "5.3.1"]
                  [clj-time "0.4.4"]]
-  :plugins [[lein-ring "0.8.10"]
-            [lein-environ "0.5.0"]]
-  :ring {:handler chat-nickname.web/app}
   :main chat-nickname.web
-  :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]]}
-   :production {:env {:production true}}})
+  :profiles {
+             :shared {:env {:chat-nickname-version ""}} ;; set version env var
+             :dev [:shared {:dependencies [[ring-mock "0.1.5"]]}]
+             :production [:shared {:env {:production true}}]
+             })

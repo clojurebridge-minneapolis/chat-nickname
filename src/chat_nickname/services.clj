@@ -103,15 +103,15 @@
               (if-not (get-server o-server)
                 ;; if we have never seen this server...
                 ;; add it to the list to update next time
-                (put-server o-server {:url o-server :updated 0}))
+                (put-server o-server {:updated 0}))
               (put-user o-userid o-user))))
         (catch Exception e
           (.getMessage e))))
-  (update-server o-url o-updated))
+  (update-server-timestamp o-url o-updated))
 
 (defn add-other-server [server]
   (let [url (str server "/servers")]
-    (if (= server (:url this-server))
+    (if (= server @this-server-url)
       "cannot add self!"
       (try
         (let [response (client/get url)
@@ -121,7 +121,7 @@
           (doseq [kw-o-url (keys other-servers)]
             ;; NOTE json/parse-string will keywordize the url
             (let [o-url (subs (str kw-o-url) 1)]
-              (if (= o-url (:url this-server))
+              (if (= o-url @this-server-url)
                 nil ;; (println "ignoring adding self...")
                 (let [o-server (get other-servers kw-o-url)
                       o-updated (:updated o-server)
@@ -157,7 +157,7 @@
                             :name username
                             :said (str (:name user)
                                        " is now known as " username)))
-                (update-server (:url this-server) (timestamp-now))
+                (update-this-server-timestamp)
                 (update-other-servers)
                 [:p (str "you changed your username (for userid = "
                          userid ") to ") [:b username]])
@@ -188,7 +188,7 @@
                   [:p "will just update the page..."])
                 (do
                   (put-user userid (assoc user :said message))
-                  (update-server (:url this-server) (timestamp-now))
+                  (update-this-server-timestamp)
                   (update-other-servers)
                   [:p "you sent message: " [:b message]]))
               [:p "Invalid userid, please try again..."]))))

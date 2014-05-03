@@ -4,7 +4,6 @@ This is a ClojureBridge Minneapolis sample application
 
 ## running in development
 
-    export NICKNAME=mynickname
     export CHAT_NICKNAME=mynickname
     export CHAT_URL=http://localhost:3000
     lein ring server
@@ -14,6 +13,8 @@ This is a ClojureBridge Minneapolis sample application
     lein with-profile production trampoline ring server-headless
 
 ## running in production on heroku
+
+NOTE: the above line is exactly what's in ```Procfile```
 
     heroku apps:create chat-mynickname
     heroku config:add CHAT_NICKNAME=mynickname CHAT_URL=http://chat-mynickname.herokuapp.com

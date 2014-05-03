@@ -21,6 +21,11 @@ body, input
     font-size: 14pt;
 }
 
+input
+{
+    padding: 0.1em 0.5em 0.1em 0.5em;
+}
+
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl
 {
   margin: 0 0 0.5em;
@@ -53,11 +58,6 @@ img
   vertical-align: top;
 }
 
-/* p */
-/* { */
-/*     font-size: 1.6em; */
-/* } */
-
 ul
 {
     /* border: 1px solid red; */
@@ -79,6 +79,18 @@ ul.said > li
     text-align: left;
     margin-left: 1em;
     padding: 0.3em 0em 0.3em 0em;
+}
+
+span.said {
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/padding
+       Four values apply to 1. top, 2. right, 3. bottom and 4. to the left side
+       https://developer.mozilla.org/en-US/docs/Web/CSS/margin
+       https://developer.mozilla.org/en-US/docs/Web/CSS/border
+       */
+    background: white;
+    margin-left: 0.5em;
+    padding: 0.1em 0.5em 0.1em 0.5em;
+    border: 1px solid #33343e;
 }
 
 a
@@ -105,23 +117,6 @@ td {
     padding: 0.5em;
 }
 
-span.said {
-    /* https://developer.mozilla.org/en-US/docs/Web/CSS/padding
-       Four values apply to 1. top, 2. right, 3. bottom and 4. to the left side
-       https://developer.mozilla.org/en-US/docs/Web/CSS/margin
-       https://developer.mozilla.org/en-US/docs/Web/CSS/border
-       */
-    background: white;
-    margin-left: 0.5em;
-    padding: 0.1em 0.5em 0.1em 0.5em;
-    border: 1px solid #33343e;
-}
-
-.odd {
-    padding-right: 1px;
-    /* background: rgba(100,100,100,0.03); */
-}
-
 .center-middle {
     text-align: center;
     vertical-align: middle;
@@ -137,9 +132,4 @@ span.said {
 {
     width: 10px;
     height: 3000px;
-}
-
-input
-{
-    padding: 0.1em 0.5em 0.1em 0.5em;
 }

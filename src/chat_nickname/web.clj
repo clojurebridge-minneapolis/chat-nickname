@@ -73,14 +73,14 @@
               status (:status response)
               body (if (== status 200) (:body response))
               other-users (if body (json/parse-string body true))]
-          ;; (println "(update-other-server" o-url ") => " other-users)
           (doseq [kw-o-userid (keys other-users)]
             ;; NOTE json/parse-string will keywordize the userid
             (let [o-userid (Integer. (name kw-o-userid))
                   o-user (get other-users kw-o-userid)
                   o-server (:server o-user)]
               (if-not (get-server o-server)
-                ;; if we have never seen this server, add it to the list to update next time
+                ;; if we have never seen this server...
+                ;; add it to the list to update next time
                 (put-server o-server {:url o-server :updated 0}))
               (put-user o-userid o-user))))
         (catch Exception e
@@ -96,11 +96,9 @@
               status (:status response)
               body (if (== status 200) (:body response))
               other-servers (if body (json/parse-string body true))]
-          ;; (println "(add-other-server" server ") => " other-servers)
           (doseq [kw-o-url (keys other-servers)]
             ;; NOTE json/parse-string will keywordize the url
             (let [o-url (subs (str kw-o-url) 1)]
-              ;; (println "considering" o-url)
               (if (= o-url (:url this-server))
                 nil ;; (println "ignoring adding self...")
                 (let [o-server (get other-servers kw-o-url)
@@ -110,7 +108,7 @@
                   (if (and local-server (= local-updated o-updated))
                     nil ;; (println "we are already up to date with" o-url)
                     (do
-                      (println "need to update" o-url "%" o-updated " vs. " local-updated)
+                      ;; (println "need to update" o-url "%" o-updated " vs. " local-updated)
                       (update-other-server o-url o-updated)
                       )))))))
         (catch Exception e
@@ -159,52 +157,55 @@
         user (if-let [u (get-user userid)] u (create-user userid))]
     {:cookies {"userid" userid}
      :body
-     (layout title nil
-             [:h1 title]
-             [:p "This is an example Clojure application for chatting with your friends."]
-             (form/form-to [:post "/change-username"]
-                           "My username is: "
-                           (form/text-field "username" (:name user))
-                           " "
-                           (form/submit-button "change"))
-             [:br]
-             (form/form-to [:post "/federate-server"]
-                           "Join with everyone at URL: "
-                           (form/text-field "server")
-                           " "
-                           (form/submit-button "federate"))
-             [:br]
-             (form/form-to [:post "/send-message"]
-                           "Message: "
-                           (form/text-field "message")
-                           " "
-                           (form/submit-button "send"))
-             [:br]
-             "What people are saying..." [:br]
-             (unordered-list (for [u (keys (get-users))]
-                               (let [user (get-user u)
-                                     name (:name user)
-                                     server (:server user)
-                                     said (:said user)]
-                                 (list [:b name] "@" server [:span.said said]))) "said")
-             (if-not (:production env)
-               (list
-                [:div.debug
-                 [:p [:b "DEBUG INFORMATION"]]
-                 [:p "My userid = " userid ", userid-cookie = " userid-cookie]
-                 [:p (str "data = " @data)]
-                 "All the servers include" [:br]
-                 (unordered-list (for [url (keys (get-servers))] (list [:b (str url)] ": " (str (get-server url)))))
-                 "All the users include" [:br]
-                 (unordered-list (for [u (keys (get-users))] (list [:b (str u)] ": " (str (get-user u)))))
-                 "This is a " [:a {:href "/hello"} "Hello"] " link." [:br]
-                 "This is a " [:a {:href "/stacktrace"} "Stacktrace"] " link." [:br]
-                 "This is a " [:a {:href "/random"} "Missing"] " link." [:br]
-                 "Return the list of " [:a {:href "/users"} "Users"] " as JSON." [:br]
-                 "Return the list of " [:a {:href "/servers"} "Servers"] " as JSON." [:br]
-                 ]
-                ))
-             )}))
+     (layout
+      title nil
+      [:h1 title]
+      [:p "This is an example Clojure application for chatting with your friends."]
+      (form/form-to [:post "/change-username"]
+                    "My username is: "
+                    (form/text-field "username" (:name user))
+                    " "
+                    (form/submit-button "change"))
+      [:br]
+      (form/form-to [:post "/federate-server"]
+                    "Join with everyone at URL: "
+                    (form/text-field "server")
+                    " "
+                    (form/submit-button "federate"))
+      [:br]
+      (form/form-to [:post "/send-message"]
+                    "Message: "
+                    (form/text-field "message")
+                    " "
+                    (form/submit-button "send"))
+      [:br]
+      "What people are saying..." [:br]
+      (unordered-list (for [u (keys (get-users))]
+                        (let [user (get-user u)
+                              name (:name user)
+                              server (:server user)
+                              said (:said user)]
+                          (list [:b name] "@" server [:span.said said]))) "said")
+      (if-not (:production env)
+        (list
+         [:div.debug
+          [:p [:b "DEBUG INFORMATION"]]
+          [:p "My userid = " userid ", userid-cookie = " userid-cookie]
+          [:p (str "data = " @data)]
+          "All the servers include" [:br]
+          (unordered-list (for [url (keys (get-servers))]
+                            (list [:b (str url)] ": " (str (get-server url)))))
+          "All the users include" [:br]
+          (unordered-list (for [u (keys (get-users))]
+                            (list [:b (str u)] ": " (str (get-user u)))))
+          "This is a " [:a {:href "/hello"} "Hello"] " link." [:br]
+          "This is a " [:a {:href "/stacktrace"} "Stacktrace"] " link." [:br]
+          "This is a " [:a {:href "/random"} "Missing"] " link." [:br]
+          "Return the list of " [:a {:href "/users"} "Users"] " as JSON." [:br]
+          "Return the list of " [:a {:href "/servers"} "Servers"] " as JSON." [:br]
+          ]
+         ))
+      )}))
 
 (defn change-username [cookies params]
   (let [title "change username"
@@ -216,12 +217,15 @@
             [:h1 title]
             (if user
               (do
-                (put-user userid (assoc user
-                                   :name username
-                                   :said (str (:name user) " is now known as " username)))
+                (put-user userid
+                          (assoc user
+                            :name username
+                            :said (str (:name user)
+                                       " is now known as " username)))
                 (update-server (:url this-server) (timestamp-now))
                 (update-other-servers)
-                [:p (str "you changed your username (for userid = " userid ") to ") [:b username]])
+                [:p (str "you changed your username (for userid = "
+                         userid ") to ") [:b username]])
               [:p "Invalid userid, please try again..."]))))
 
 (defn federate-server [cookies params]
@@ -258,18 +262,24 @@
   (= [name pass] [(:chat-nickname env) (:repl-password env)]))
 
 (defroutes app-routes
-  (GET "/" {cookies :cookies} (main-page cookies))
-  (POST "/change-username" {cookies :cookies params :params} (change-username cookies params))
-  (POST "/federate-server" {cookies :cookies params :params} (federate-server cookies params))
-  (POST "/send-message" {cookies :cookies params :params} (send-message cookies params))
+  (GET "/" {cookies :cookies}
+       (main-page cookies))
+  (POST "/change-username" {cookies :cookies params :params}
+        (change-username cookies params))
+  (POST "/federate-server" {cookies :cookies params :params}
+        (federate-server cookies params))
+  (POST "/send-message" {cookies :cookies params :params}
+        (send-message cookies params))
   (GET "/users" [] {:status 200
                     :headers {"Content-Type" "application/json; charset=utf-8"}
                     :body (json/generate-string (get-users))})
   (GET "/servers" [] {:status 200
                       :headers {"Content-Type" "application/json; charset=utf-8"}
                       :body (json/generate-string (get-servers))})
-  (GET "/hello" [] "Hello World!")
-  (GET "/stacktrace" [] ("string-is-not-a-function"))
+  (GET "/hello" []
+       "Hello World!")
+  (GET "/stacktrace" []
+       ("string-is-not-a-function"))
   (route/resources "/")
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))

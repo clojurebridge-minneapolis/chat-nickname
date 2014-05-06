@@ -34,7 +34,7 @@
         chat-nickname (str "chat-" nickname)
         title (if (:production env) chat-nickname (str chat-nickname " :dev"))
         userid-cookie (:value (cookies "userid"))
-        userid (if userid-cookie (Integer. userid-cookie) (new-userid))
+        userid (if userid-cookie userid-cookie (new-userid))
         user (if-let [u (get-user userid)] u (create-user userid))]
     {:cookies {"userid" userid}
      :body
@@ -144,8 +144,7 @@
 
 (defn change-username [cookies params]
   (let [title "change username"
-        userid-cookie (:value (cookies "userid"))
-        userid (if userid-cookie (Integer. userid-cookie))
+        userid (:value (cookies "userid"))
         user (if userid (get-user userid))
         username (:username params)]
     (layout title "/"
@@ -175,8 +174,7 @@
 
 (defn send-message [cookies params]
   (let [title "send message"
-        userid-cookie (:value (cookies "userid"))
-        userid (if userid-cookie (Integer. userid-cookie))
+        userid (:value (cookies "userid"))
         user (if userid (get-user userid))
         message (:message params)]
     (layout title "/"

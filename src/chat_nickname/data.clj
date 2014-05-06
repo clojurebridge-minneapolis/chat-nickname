@@ -1,8 +1,9 @@
 (ns chat-nickname.data
-  (:require [clj-time.core :as dt])) ;; think of dt as Date and Time
+  (:import (com.eaio.uuid UUID))
+  (:require [clj-time.local :as timelocal]))
 
 (defn timestamp-now []
-  (.getMillis (dt/now)))
+  (.getMillis (timelocal/local-now)))
 
 (def data (atom {:servers {} :users {}}))
 
@@ -38,12 +39,10 @@
   (update-this-server-timestamp)) ;; update the timestamp
 
 (defn new-userid []
-  (let [userid (rand-int 1000000)] ;; you are one in a million!
-    ;; future option: check to make sure userid is not already in use
-    userid))
+  (.toString (new UUID)))
 
 (defn create-user [userid]
-  (let [user {:name (str userid)
+  (let [user {:name userid
               :server @this-server-url
               :said ""}]
     (put-user userid user)

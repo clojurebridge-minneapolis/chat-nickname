@@ -64,4 +64,4 @@ how to setup running tests from leiningen:
 
 Copyright © 2014 Informatique, Inc.
 
-Distributed under and contributions made with the [MIT](http://opensource.org/licenses/MIT) license.
+Distributed under and contributions made with the [MIT](http://opensource.org/licenses/MIT) [LICENSE](LICENSE).

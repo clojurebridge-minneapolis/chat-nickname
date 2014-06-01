@@ -1,9 +1,21 @@
 (ns chat-nickname.data
-  (:import (com.eaio.uuid UUID))
-  (:require [clj-time.local :as timelocal]))
+  (:import (org.joda.time DateTime)
+           (com.eaio.uuid UUID))
+  (:require [clj-time.core :as time]
+            [clj-time.local :as timelocal]))
 
+;; returns the time as the number of milliseconds since the epoch in UTC
 (defn timestamp-now []
-  (.getMillis (timelocal/local-now)))
+  (.getMillis (time/now)))
+
+;; converts a timestamp (milliseconds since the epoch in UTC)
+;; to a DateTime in the local time zone
+(defn local-date-time-from-timestamp [ts]
+  (DateTime. ts (time/default-time-zone)))
+
+;; converts a DateTime in the local time zone to a string
+(defn local-date-time-string [dt]
+  (timelocal/format-local-time dt :date-hour-minute-second-ms))
 
 (def data (atom {:servers {} :users {}}))
 

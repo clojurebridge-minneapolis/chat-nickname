@@ -1,5 +1,8 @@
 # chat-nickname
 
+**NOTE:** Pointers to our latest version of the curriculum can be found in the [installfest](https://github.com/clojurebridge-minneapolis/installfest) repo!
+
+
 This is a ClojureBridge Minneapolis sample application
 
 ## running in development
